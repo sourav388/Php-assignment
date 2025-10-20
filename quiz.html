@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Application</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #eef2ff);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .quiz-container {
+      background: #ffffff;
+      padding: 30px 25px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      width: 340px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #1e3a8a;
+      margin-bottom: 10px;
+      font-size: 1.6rem;
+    }
+
+    p {
+      color: #475569;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: left;
+    }
+
+    .options li {
+      margin: 8px 0;
+    }
+
+    .options label {
+      display: block;
+      background: #f1f5f9;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .options label:hover {
+      background: #dbeafe;
+    }
+
+    input[type="radio"] {
+      accent-color: #2563eb;
+      margin-right: 8px;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background 0.3s;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+
+    button:disabled {
+      background-color: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .score {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    .score-emoji {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .play-again-btn {
+      background-color: #facc15;
+      color: #1e293b;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin-top: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .play-again-btn:hover {
+      background-color: #eab308;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div id="start-page">
+      <h2>✨ Welcome to the Quiz!</h2>
+      <p>Test your knowledge in a fun way.</p>
+      <button id="start-btn">Start Quiz</button>
+    </div>
+
+    <div id="quiz-content" style="display:none;">
+      <div class="quiz-header">
+        <div id="question" class="question"></div>
+        <ul id="options" class="options"></ul>
+      </div>
+      <button id="submit">Submit</button>
+      <div id="score" class="score"></div>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "What is the capital of France?",
+        options: ["Berlin", "London", "Paris", "Madrid"],
+        answer: 2,
+      },
+      {
+        question: "Which language runs in a web browser?",
+        options: ["Java", "C", "Python", "JavaScript"],
+        answer: 3,
+      },
+      {
+        question: "What does CSS stand for?",
+        options: ["Central Style Sheets", "Cascading Style Sheets", "Cascading Simple Sheets", "Cars SUVs Sailboats"],
+        answer: 1,
+      },
+      {
+        question: "What year was JavaScript launched?",
+        options: ["1996", "1995", "1994", "None of the above"],
+        answer: 1,
+      },
+    ];
+
+    let currentQuiz = 0;
+    let score = 0;
+
+    const startPage = document.getElementById("start-page");
+    const startBtn = document.getElementById("start-btn");
+    const quizContent = document.getElementById("quiz-content");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const submitBtn = document.getElementById("submit");
+    const scoreEl = document.getElementById("score");
+
+    function loadQuiz() {
+      deselectOptions();
+      const currentQuizData = quizData[currentQuiz];
+      questionEl.textContent = currentQuizData.question;
+      optionsEl.innerHTML = "";
+      currentQuizData.options.forEach((option, idx) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<label><input type="radio" name="option" value="${idx}"> ${option}</label>`;
+        optionsEl.appendChild(li);
+      });
+      scoreEl.textContent = "";
+    }
+
+    function getSelected() {
+      const options = document.getElementsByName("option");
+      let selected = null;
+      options.forEach((option) => {
+        if (option.checked) {
+          selected = parseInt(option.value);
+        }
+      });
+      return selected;
+    }
+
+    function deselectOptions() {
+      const options = document.getElementsByName("option");
+      options.forEach((option) => (option.checked = false));
+    }
+
+    startBtn.addEventListener("click", () => {
+      startPage.style.display = "none";
+      quizContent.style.display = "block";
+      currentQuiz = 0;
+      score = 0;
+      submitBtn.disabled = false;
+      loadQuiz();
+    });
+
+    submitBtn.addEventListener("click", () => {
+      const selected = getSelected();
+      if (selected === null) {
+        alert("Please select an answer!");
+        return;
+      }
+
+      if (selected === quizData[currentQuiz].answer) score++;
+
+      currentQuiz++;
+      if (currentQuiz < quizData.length) {
+        loadQuiz();
+      } else {
+        questionEl.textContent = "";
+        optionsEl.innerHTML = "";
+        submitBtn.style.display = "none";
+
+        let emoji = "🎉";
+        let message = "Great job!";
+        if (score === quizData.length) {
+          emoji = "🏆";
+          message = "Perfect! You're a quiz master!";
+        } else if (score >= quizData.length - 1) {
+          emoji = "🌟";
+          message = "Almost perfect!";
+        } else if (score === 0) {
+          emoji = "😅";
+          message = "Don’t worry, try again!";
+        } else {
+          emoji = "👍";
+          message = "Keep practicing!";
+        }
+
+        scoreEl.innerHTML = `
+          <span class="score-emoji">${emoji}</span>
+          <div>${message}</div>
+          <div>You scored <b>${score}</b> out of <b>${quizData.length}</b>.</div>
+          <button class="play-again-btn" id="play-again">Play Again</button>
+        `;
+
+        document.getElementById("play-again").onclick = () => {
+          currentQuiz = 0;
+          score = 0;
+          submitBtn.style.display = "inline-block";
+          submitBtn.disabled = false;
+          loadQuiz();
+        };
+      }
+    });
+  </script>
+</body>
+</html>
